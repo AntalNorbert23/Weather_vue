@@ -25,6 +25,13 @@
               </template>
           </ul>
       </div>
+      <div class="flex flex-column gap-4"></div>
+      <Suspense>
+          <CityList/>
+          <template #fallback>
+              <p>Loading...</p>
+          </template>
+      </Suspense>
   </main>
 </template>
 
@@ -32,6 +39,7 @@
     import { ref } from 'vue';
     import axios from 'axios';
     import { useRouter } from 'vue-router';
+    import CityList from "../components/CityList.vue";
 
     const mapboxAPIKey="pk.eyJ1Ijoibm9yYmVydGNzYWJhIiwiYSI6ImNsdTVoMDNxbjFxdWYya3FzYjc5ZmVyM3oifQ.63QI_M3CQfKDn6sAfduEBA";
     const search=ref("");

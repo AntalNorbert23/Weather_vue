@@ -1,6 +1,6 @@
 <template>
     <div v-for="city in savedCities" :key="city.id">
-        <CityCard :city="city" @click="goToCityView()"/> 
+        <CityCard :city="city" @click="goToCityView(city)"/> 
     </div>
 
     <p v-if="savedCities.length === 0">
@@ -28,6 +28,7 @@
 
             const weatherData=await  Promise.all(requests);
 
+            await new Promise((res)=>setTimeout(res,1000));
             weatherData.forEach((value,index)=>{
                 savedCities.value[index].weather=value.data;
             })
@@ -39,7 +40,7 @@
         router.push({
             name:"cityView",
             params:{state:city.state, city:city.city},
-            query:{lat: city.coords.lat, lng:city.coords.lng}
+            query:{id:city.id, lat: city.coords.lat, lng:city.coords.lng}
         })
     }
 </script>

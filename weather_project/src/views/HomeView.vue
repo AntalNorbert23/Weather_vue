@@ -29,7 +29,7 @@
       <Suspense>
           <CityList/>
           <template #fallback>
-              <p>Loading...</p>
+              <CityCardSkeleton />
           </template>
       </Suspense>
   </main>
@@ -40,6 +40,7 @@
     import axios from 'axios';
     import { useRouter } from 'vue-router';
     import CityList from "../components/CityList.vue";
+    import CityCardSkeleton from "../components/CityCardSkeleton.vue";
 
     const mapboxAPIKey="pk.eyJ1Ijoibm9yYmVydGNzYWJhIiwiYSI6ImNsdTVoMDNxbjFxdWYya3FzYjc5ZmVyM3oifQ.63QI_M3CQfKDn6sAfduEBA";
     const search=ref("");

@@ -7,18 +7,16 @@
 
         <div class="flex flex-col gap-2">
             <p class="text-3xl self-end">
-                {{ ((Math.round(city.weather.main.temp)-32)*5/9).toFixed(1) }}°C 
+                {{ city.weather?.current?.temp_c?.toFixed(1) || '--' }}°C 
             </p>
         </div>
 
         <div class="flex flex-col gap-2 px-4">
             <span class="text-xs">
-                H:
-                {{ ((Math.round(city.weather.main.temp_max)-32)*5/9).toFixed(1) }}°C 
+                H: {{ city.weather?.forecast?.forecastday[0]?.day?.maxtemp_c?.toFixed(1) || '--' }}°C 
             </span>
             <span class="text-xs">
-                L:
-                {{ ((Math.round(city.weather.main.temp_min)-32)*5/9).toFixed(1) }}°C 
+                L: {{ city.weather?.forecast?.forecastday[0]?.day?.mintemp_c?.toFixed(1) || '--' }}°C 
             </span>
         </div>
     </div>

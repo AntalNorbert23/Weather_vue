@@ -10,35 +10,38 @@
         <div class="flex flex-col items-center text-white py-12">
             <h1 class="text-4xl mb-2">{{ route.params.city }}</h1>
             <p class="text-sm mb-12">
-                {{  new Date(weatherData.currentTime).toLocaleDateString(
-                        "en-us",
-                        {
-                            weekday: "short",
-                            day: "2-digit",
-                            month: "long",
-                        }
-                    )
-                }}
-                {{ new Date(weatherData.currentTime).toLocaleTimeString(
-                        "en-us",
-                        {
-                           timeStyle:"short",
-                        }
-                    )    
-                }}
-            </p>
+    {{ 
+        new Date(weatherData.current.last_updated_epoch * 1000).toLocaleDateString(
+            "en-us", 
+            {
+                weekday: "short",
+                day: "2-digit",
+                month: "long",
+            }
+        ) 
+    }}
+    {{ 
+        new Date(weatherData.current.last_updated_epoch * 1000).toLocaleTimeString(
+            "en-us", 
+            {
+                timeStyle: "short",
+            }
+        ) 
+    }}
+</p>
+
             <p class="text-8xl mb-8">
-                {{ ((Math.round(weatherData.current.temp)-32)*5/9).toFixed(1) }}°C
+                {{ weatherData.current.temp_c.toFixed(1) }}°C
             </p>
                 <p>
                     Feels like
-                    {{ ((Math.round(weatherData.current.feels_like)-32)*5/9).toFixed(1) }}°C
+                    {{ weatherData.current.feelslike_c.toFixed(1) }}°C
                 </p>
                 <p class="capitalize">
-                    {{ weatherData.current.weather[0].description }}
+                    {{ weatherData.current.condition.text }}
                 </p>
                 <img class="w-[150px] h-auto"
-                     :src="`http://openweathermap.org/img/wn/${weatherData.current.weather[0].icon}@2x.png`"
+                     :src="`https://${weatherData.current.condition.icon}`"
                       alt="weather icon"
                 >
         </div>
@@ -50,23 +53,23 @@
                     <h2 class="mb-4">Hourly weather</h2>   
                 </div>
                 <div class="flex gap-10 overflow-x-scroll">
-                    <div v-for="hourData in weatherData.hourly" 
-                         :key="hourData.dt"
+                    <div v-for="hourData in weatherData.forecast.forecastday[0].hour" 
+                         :key="hourData.time_epoch"
                          class="flex flex-col gap-4 items-center"
                     >
                         <p class="whitespace-nowrap text-md">
-                            {{ new Date(hourData.currentTime).toLocaleTimeString(
+                            {{ new Date(hourData.time_epoch * 1000).toLocaleTimeString(
                                 'en-us',{
                                     hour:'numeric',
                                 })
                              }}
                         </p>
                         <img class="w-auto h-[50px] object-cover"
-                             :src="`http://openweathermap.org/img/wn/${hourData.weather[0].icon}@2x.png`"
+                             :src="`https://${hourData.condition.icon}`"
                               alt="hourly weather"
                         >
                         <p class="text-xl">
-                            {{ ((Math.round(hourData.temp)-32)*5/9).toFixed(1) }}°C
+                            {{ hourData.temp_c.toFixed(1) }}°C
                         </p>
                     </div>
                 </div>
@@ -77,28 +80,27 @@
             <div class="mx-8 text-white">
                 <h2 class="mb-4">7 day forecast</h2>
                 <div class="flex items-center"
-                     v-for="day in weatherData.daily"
-                     :key="day.dt"
+                     v-for="day in weatherData.forecast.forecastday"
+                     :key="day.date_epoch"
                 >
                      
                       <p class="flex-1">
                             {{ 
-                                new Date(day.dt*1000).toLocaleDateString(
+                                new Date(day.date_epoch * 1000).toLocaleDateString(
                                     "en-us",
                                     {
                                        weekday:"long", 
                                     }
                                 )
-
                             }}
                       </p>
                       <img class="w-[50px] h-[50px] object-cover"
-                           :src="`http://openweathermap.org/img/wn/${day.weather[0].icon}@2x.png`"
+                           :src="`https://${day.day.condition.icon}`"
                            alt="weather icon"
                       >
                       <div class="flex gap-2 flex-1 justify-end">
-                            <p>H: {{ ((Math.round(day.temp.max)-32)*5/9).toFixed(1) }}°C</p>
-                            <p>L: {{ ((Math.round(day.temp.min)-32)*5/9).toFixed(1) }}°C</p>
+                            <p>H: {{ day.day.maxtemp_c.toFixed(1) }}°C</p>
+                            <p>L: {{ day.day.mintemp_c.toFixed(1) }}°C</p>
                       </div>
 
                 </div>
@@ -116,30 +118,35 @@
 <script setup>
     import axios from 'axios';
     import {useRoute ,useRouter} from 'vue-router';
+    const apikey = import.meta.env.VITE_API_KEY
 
     const route=useRoute();
 
-    const getWeatherData=async ()=>{
-        try{
-            const weatherData= await axios.get(`https://api.openweathermap.org/data/2.5/onecall?lat=${route.query.lat}&lon=${route.query.lng}&exclude={part}&appid=7efa332cf48aeb9d2d391a51027f1a71&units=imperial`);
+    const getWeatherData = async () => {
+    try {
+        const weatherData = await axios.get(`http://api.weatherapi.com/v1/forecast.json?key=${apikey}&q=${route.query.lat},${route.query.lng}&days=7&aqi=no&alerts=no`);
 
-            //calculate current date and time 
-            const localOffset=new Date().getTimezoneOffset() *60000;
-            const utc =weatherData.data.current.dt*1000+localOffset;
-            weatherData.data.currentTime= utc+1000*weatherData.data.timezone_offset;
+        // Calculate current date and time
+        const localOffset = new Date().getTimezoneOffset() * 60000;
+        const utc = weatherData.data.location.localtime_epoch * 1000 + localOffset;
+        weatherData.data.currentTime = utc + 1000 * weatherData.data.location.utc_offset;
 
-            //hourly weather offset
-            weatherData.data.hourly.forEach((hour)=>{
-                const utc=hour.dt*1000+localOffset;
-                hour.currentTime=utc+1000*weatherData.data.timezone_offset;
+        // Hourly weather offset
+        weatherData.data.forecast.forecastday.forEach((day) => {
+            day.hour.forEach((hour) => {
+                const utc = hour.time_epoch * 1000 + localOffset;
+                hour.currentTime = utc + 1000 * weatherData.data.location.utc_offset;
             });
-
-        await new Promise((res)=>setTimeout(res,1000))
-            return weatherData.data;
-        }catch(error){
-            console.error(error.message);
-        }
+        });
+     
+        await new Promise((res) => setTimeout(res, 1000));
+        return weatherData.data;
+    } catch (error) {
+        console.error(error.message);
     }
+};
+
+
     
     const weatherData=await getWeatherData();
 

@@ -13,34 +13,39 @@
     import { ref } from "vue";
     import CityCard from "./CityCard.vue";
     import { useRouter } from "vue-router";
+    const apikey = import.meta.env.VITE_API_KEY;
 
-    const savedCities=ref([]);
-    const getCities=async()=>{
-        if (localStorage.getItem("savedCities")){
-            savedCities.value=JSON.parse(localStorage.getItem("savedCities"));
+    const savedCities = ref([]);
+    
+    const getCities = async () => {
+        if (localStorage.getItem("savedCities")) {
+            savedCities.value = JSON.parse(localStorage.getItem("savedCities"));
             
-            const requests=[];
-            savedCities.value.forEach((city)=>{
+            const requests = [];
+            savedCities.value.forEach((city) => {
                 requests.push(
-                    axios.get(`https://api.openweathermap.org/data/2.5/weather?lat=${city.coords.lat}&lon=${city.coords.lng}&appid=7efa332cf48aeb9d2d391a51027f1a71&units=imperial`)
-                )
+                    axios.get(`http://api.weatherapi.com/v1/forecast.json?key=${apikey}&q=${city.coords.lat},${city.coords.lng}&days=7&aqi=no&alerts=no`)
+                );
             });
 
-            const weatherData=await  Promise.all(requests);
+            const weatherData = await Promise.all(requests);
 
-            await new Promise((res)=>setTimeout(res,1000));
-            weatherData.forEach((value,index)=>{
-                savedCities.value[index].weather=value.data;
-            })
+
+            await new Promise((res) => setTimeout(res, 1000));
+            weatherData.forEach((value, index) => {
+                savedCities.value[index].weather = value.data;
+            });
         }
-    }
+    };
+
     await getCities();
-    const router=useRouter()
-    const goToCityView=(city)=>{
+
+    const router = useRouter();
+    const goToCityView = (city) => {
         router.push({
-            name:"cityView",
-            params:{state:city.state, city:city.city},
-            query:{id:city.id, lat: city.coords.lat, lng:city.coords.lng}
-        })
-    }
+            name: "cityView",
+            params: { state: city.state, city: city.city },
+            query: { id: city.id, lat: city.coords.lat, lng: city.coords.lng },
+        });
+    };
 </script>

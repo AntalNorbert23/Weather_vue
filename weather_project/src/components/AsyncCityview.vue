@@ -124,7 +124,7 @@
 
     const getWeatherData = async () => {
     try {
-        const weatherData = await axios.get(`http://api.weatherapi.com/v1/forecast.json?key=${apikey}&q=${route.query.lat},${route.query.lng}&days=7&aqi=no&alerts=no`);
+        const weatherData = await axios.get(`https://api.weatherapi.com/v1/forecast.json?key=${apikey}&q=${route.query.lat},${route.query.lng}&days=7&aqi=no&alerts=no`);
 
         // Calculate current date and time
         const localOffset = new Date().getTimezoneOffset() * 60000;

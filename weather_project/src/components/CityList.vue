@@ -24,7 +24,7 @@
             const requests = [];
             savedCities.value.forEach((city) => {
                 requests.push(
-                    axios.get(`http://api.weatherapi.com/v1/forecast.json?key=${apikey}&q=${city.coords.lat},${city.coords.lng}&days=7&aqi=no&alerts=no`)
+                    axios.get(`https://api.weatherapi.com/v1/forecast.json?key=${apikey}&q=${city.coords.lat},${city.coords.lng}&days=7&aqi=no&alerts=no`)
                 );
             });
 
